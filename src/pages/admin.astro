@@ -41,7 +41,7 @@ import Layout from '../layouts/Layout.astro';
         tg.enableClosingConfirmation();
     }
 
-    const API_URL = 'http://127.0.0.1:8000/api/products'; // В проде заменить
+    const API_URL = '/api/products'; // Relative path for Docker/Nginx
 
     let allProducts = [];
 
@@ -118,7 +118,7 @@ import Layout from '../layouts/Layout.astro';
         }
 
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/stock/update', {
+            const res = await fetch('/api/stock/update', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ product_id: id, change: change })
