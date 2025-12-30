@@ -48,7 +48,8 @@ import Layout from '../layouts/Layout.astro';
 			const container = document.getElementById('catalog');
 			if (!container) return;
 
-			const response = await fetch(API_URL);
+			// Добавляем timestamp, чтобы избежать кеширования браузером или Nginx
+			const response = await fetch(`${API_URL}?t=${Date.now()}`);
 			if (!response.ok) throw new Error('Network response was not ok');
 			
 			const products = await response.json();

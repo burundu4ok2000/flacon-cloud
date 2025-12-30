@@ -6,5 +6,10 @@ import tailwind from '@tailwindcss/vite';
 export default defineConfig({
   vite: {
     plugins: [tailwind()],
+    server: {
+      proxy: {
+        '/api': 'http://127.0.0.1:8000'
+      }
+    }
   },
 });
