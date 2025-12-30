@@ -35,8 +35,11 @@ def init_db():
     conn = get_db()
     c = conn.cursor()
     
+    # Для демо: всегда пересоздаем таблицу, чтобы картинки были свежие
+    c.execute("DROP TABLE IF EXISTS products")
+    
     c.execute('''
-        CREATE TABLE IF NOT EXISTS products (
+        CREATE TABLE products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             brand TEXT NOT NULL,
@@ -48,23 +51,20 @@ def init_db():
         )
     ''')
     
-    # Проверяем, есть ли уже товары
-    c.execute("SELECT COUNT(*) FROM products")
-    if c.fetchone()[0] == 0:
-        # Добавляем лакшери-духи для демки
-        demo_products = [
-            ("Lost Cherry", "Tom Ford", 45000, 5, "Вишнёвый ликёр с нотами миндаля и корицы", "/images/tom-ford-lost-cherry.jpg", "unisex"),
-            ("Baccarat Rouge 540", "Maison Francis Kurkdjian", 38000, 3, "Легендарный аромат с янтарём и жасмином", "/images/baccarat-rouge-540.jpg", "unisex"),
-            ("Oud Wood", "Tom Ford", 32000, 7, "Благородный уд с нотами сандала и ветивера", "/images/tom-ford-oud-wood.jpg", "unisex"),
-            ("Aventus", "Creed", 55000, 2, "Культовый мужской аромат с ананасом и берёзой", "/images/creed-aventus.jpg", "male"),
-            ("J'adore", "Dior", 18000, 12, "Цветочный букет с иланг-илангом и розой", "/images/dior-jadore.jpg", "female"),
-        ]
-        
-        c.executemany(
-            "INSERT INTO products (name, brand, price, stock, description, image, category) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            demo_products
-        )
-        conn.commit()
+    # Добавляем лакшери-духи (все картинки .png!)
+    demo_products = [
+        ("Lost Cherry", "Tom Ford", 45000, 5, "Вишнёвый ликёр с нотами миндаля и корицы", "/images/cherry.png", "unisex"),
+        ("Baccarat Rouge 540", "Maison Francis Kurkdjian", 38000, 3, "Легендарный аромат с янтарём и жасмином", "/images/baccarat.png", "unisex"),
+        ("Oud Wood", "Tom Ford", 32000, 7, "Благородный уд с нотами сандала и ветивера", "/images/oud.png", "unisex"),
+        ("Aventus", "Creed", 55000, 2, "Культовый мужской аромат с ананасом и берёзой", "/images/aventus.png", "male"),
+        ("Chanel No 5", "Chanel", 16000, 12, "Вечная классика альдегидов и цветов", "/images/chanel.png", "female"),
+    ]
+    
+    c.executemany(
+        "INSERT INTO products (name, brand, price, stock, description, image, category) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        demo_products
+    )
+    conn.commit()
     
     conn.close()
 
