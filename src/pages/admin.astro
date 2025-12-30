@@ -69,7 +69,7 @@ import Layout from '../layouts/Layout.astro';
                     <div class="truncate">
                         <p class="font-bold text-sm truncate">${p.name}</p>
                         <p class="text-xs text-gray-500 truncate">${p.brand}</p>
-                        <p class="text-xs font-mono mt-1 ${p.stock < 3 ? 'text-red-500' : 'text-green-600'}">
+                        <p id="stock-container-${p.id}" class="text-xs font-mono mt-1 ${p.stock <= 3 ? 'text-red-500' : 'text-green-600'}">
                             Остаток: <span id="stock-${p.id}" class="text-base font-bold">${p.stock}</span>
                         </p>
                     </div>
@@ -106,10 +106,23 @@ import Layout from '../layouts/Layout.astro';
     window.updateStock = async (id, change) => {
         // Оптимистичное обновление UI
         const stockEl = document.getElementById(`stock-${id}`);
+        const containerEl = document.getElementById(`stock-container-${id}`);
+        
         if (stockEl) {
             const current = parseInt(stockEl.innerText);
             const newVal = Math.max(0, current + change);
             stockEl.innerText = newVal;
+            
+            // Обновляем цвет динамически
+            if (containerEl) {
+                if (newVal <= 3) {
+                    containerEl.classList.remove('text-green-600');
+                    containerEl.classList.add('text-red-500');
+                } else {
+                    containerEl.classList.remove('text-red-500');
+                    containerEl.classList.add('text-green-600');
+                }
+            }
             
             // Вибрация (Haptic Feedback)
             if (tg?.HapticFeedback) {
