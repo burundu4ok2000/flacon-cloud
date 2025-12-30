@@ -1,0 +1,52 @@
+[
+  {
+    "id": 5,
+    "name": "No 5",
+    "brand": "Chanel",
+    "price": 18000,
+    "stock": 12,
+    "description": "Легендарный пудровый аромат с нотами альдегидов, розы и жасмина",
+    "image": "/images/chanel.png",
+    "category": "female"
+  },
+  {
+    "id": 4,
+    "name": "Aventus",
+    "brand": "Creed",
+    "price": 55000,
+    "stock": 0,
+    "description": "Культовый мужской аромат с ананасом и берёзой",
+    "image": "/images/aventus.png",
+    "category": "male"
+  },
+  {
+    "id": 2,
+    "name": "Baccarat Rouge 540",
+    "brand": "Maison Francis Kurkdjian",
+    "price": 38000,
+    "stock": 1,
+    "description": "Легендарный аромат с янтарём и жасмином",
+    "image": "/images/baccarat.png",
+    "category": "unisex"
+  },
+  {
+    "id": 1,
+    "name": "Lost Cherry",
+    "brand": "Tom Ford",
+    "price": 45000,
+    "stock": 3,
+    "description": "Вишнёвый ликёр с нотами миндаля и корицы",
+    "image": "/images/cherry.png",
+    "category": "unisex"
+  },
+  {
+    "id": 3,
+    "name": "Oud Wood",
+    "brand": "Tom Ford",
+    "price": 32000,
+    "stock": 5,
+    "description": "Благородный уд с нотами сандала и ветивера",
+    "image": "/images/oud.png",
+    "category": "unisex"
+  }
+]

@@ -1,0 +1,155 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Склад | Admin Panel">
+    <div class="min-h-screen bg-white text-black p-4 pb-20">
+        <div class="sticky top-0 bg-white/95 backdrop-blur-sm z-10 pb-4 border-b border-gray-100">
+            <h1 class="text-2xl font-bold mb-4 font-sans text-black">Склад</h1>
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="search-input"
+                    placeholder="Поиск духа..." 
+                    class="w-full bg-gray-100 border-none rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-black outline-none transition-all"
+                >
+                <div class="absolute right-3 top-3 text-gray-400">
+                    🔍
+                </div>
+            </div>
+        </div>
+
+        <div id="product-list" class="space-y-3 mt-4">
+            <!-- Items injected via JS -->
+            <div class="animate-pulse space-y-3">
+                <div class="h-20 bg-gray-100 rounded-xl"></div>
+                <div class="h-20 bg-gray-100 rounded-xl"></div>
+                <div class="h-20 bg-gray-100 rounded-xl"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telegram WebApp Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js" is:inline></script>
+</Layout>
+
+<script>
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+        tg.expand();
+        tg.enableClosingConfirmation();
+    }
+
+    const API_URL = 'http://127.0.0.1:8000/api/products'; // В проде заменить
+
+    let allProducts = [];
+
+    // Загрузка
+    async function loadData() {
+        try {
+            const res = await fetch(API_URL);
+            allProducts = await res.json();
+            renderList(allProducts);
+        } catch (e) {
+            console.error(e);
+            alert("Ошибка соединения с сервером");
+        }
+    }
+
+    // Рендер
+    function renderList(products) {
+        const list = document.getElementById('product-list');
+        if (!list) return;
+
+        list.innerHTML = products.map(p => `
+            <div class="flex items-center justify-between bg-white border border-gray-100 shadow-sm rounded-xl p-3 animate-fade-in">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <img src="${p.image}" class="w-12 h-12 rounded-lg object-cover bg-gray-50" onerror="this.src='https://via.placeholder.com/50'">
+                    <div class="truncate">
+                        <p class="font-bold text-sm truncate">${p.name}</p>
+                        <p class="text-xs text-gray-500 truncate">${p.brand}</p>
+                        <p class="text-xs font-mono mt-1 ${p.stock < 3 ? 'text-red-500' : 'text-green-600'}">
+                            Остаток: <span id="stock-${p.id}" class="text-base font-bold">${p.stock}</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 ml-2">
+                    <button 
+                        class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-50 hover:text-red-500 text-xl font-bold transition-colors flex items-center justify-center active:scale-95 touch-manipulation"
+                        onclick="updateStock(${p.id}, -1)"
+                    >−</button>
+                    <button 
+                        class="w-10 h-10 rounded-full bg-gray-100 hover:bg-green-50 hover:text-green-500 text-xl font-bold transition-colors flex items-center justify-center active:scale-95 touch-manipulation"
+                        onclick="updateStock(${p.id}, 1)"
+                    >+</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Логика поиска
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allProducts.filter(p => 
+                p.name.toLowerCase().includes(term) || 
+                p.brand.toLowerCase().includes(term)
+            );
+            renderList(filtered);
+        });
+    }
+
+    // Обновление остатков
+    window.updateStock = async (id, change) => {
+        // Оптимистичное обновление UI
+        const stockEl = document.getElementById(`stock-${id}`);
+        if (stockEl) {
+            const current = parseInt(stockEl.innerText);
+            const newVal = Math.max(0, current + change);
+            stockEl.innerText = newVal;
+            
+            // Вибрация (Haptic Feedback)
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred(change > 0 ? 'light' : 'medium');
+            }
+        }
+
+        try {
+            const res = await fetch('http://127.0.0.1:8000/api/stock/update', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ product_id: id, change: change })
+            });
+            const data = await res.json();
+            
+            // Если ошибка или рассинхрон - обновляем с сервера
+            if (data.success) {
+                // Обновляем в локальном кеше
+                const prod = allProducts.find(p => p.id === id);
+                if (prod) prod.stock = data.product.stock;
+            } else {
+                loadData(); // Полная перезагрузка при ошибке
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Ошибка сети");
+            loadData(); // Откат
+        }
+    };
+
+    loadData();
+</script>
+
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    /* Убираем подсветку при тапе на мобильных */
+    button {
+        -webkit-tap-highlight-color: transparent;
+    }
+</style>

@@ -1,0 +1,77 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Flacon Cloud - Exclusive Perfume Store" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+	</head>
+	<body class="bg-[#0a0a0a] text-white min-h-screen font-sans">
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--gold-primary: #D4AF37;
+		--gold-hover: #F4CF57;
+		--dark-bg: #0a0a0a;
+		--dark-card: #141414;
+	}
+	
+	html {
+		background: #0a0a0a;
+		scroll-behavior: smooth;
+	}
+
+	body {
+		margin: 0;
+		font-family: 'Montserrat', sans-serif;
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		font-family: 'Cinzel', serif;
+	}
+
+	.text-gold {
+		color: var(--gold-primary);
+	}
+	
+	.border-gold {
+		border-color: var(--gold-primary);
+	}
+	
+	.bg-gold {
+		background-color: var(--gold-primary);
+	}
+
+	/* Custom Scrollbar */
+	::-webkit-scrollbar {
+		width: 8px;
+	}
+	::-webkit-scrollbar-track {
+		background: #0a0a0a; 
+	}
+	::-webkit-scrollbar-thumb {
+		background: #333; 
+		border-radius: 4px;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: #555; 
+	}
+</style>

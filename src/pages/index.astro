@@ -1,0 +1,146 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="L'ESSENCE DE MOSCOW | Exclusive Perfumes">
+	<header class="fixed w-full z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/10">
+		<div class="container mx-auto px-4 py-4 flex justify-between items-center">
+			<a href="/" class="text-2xl font-bold tracking-widest text-[#D4AF37]">L'ESSENCE</a>
+			<nav>
+				<a href="#catalog" class="text-sm uppercase tracking-widest hover:text-[#D4AF37] transition-colors">Каталог</a>
+			</nav>
+		</div>
+	</header>
+
+	<main class="pt-24 pb-12 px-4">
+		<div class="container mx-auto">
+			<section class="mb-16 text-center">
+					HAUTE PARFUMERIE
+				</h1>
+				<p class="text-gray-400 max-w-2xl mx-auto font-light">
+					Эксклюзивная коллекция ароматов с доставкой по Москве в день заказа.
+				</p>
+			</section>
+
+			<div id="catalog" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				<!-- Products will be loaded here via JS -->
+				<div class="col-span-full text-center py-20 text-gray-500 loading-skeleton">
+					<p>Загрузка коллекции...</p>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<footer class="border-t border-white/10 py-8 bg-[#050505]">
+		<div class="container mx-auto px-4 text-center">
+			<p class="text-gray-600 text-sm">© 2026 L'ESSENCE DE MOSCOW. All rights reserved.</p>
+		</div>
+	</footer>
+</Layout>
+
+<script>
+	// Docker + Nginx handles the routing for us
+	const API_URL = '/api/products';
+	let isFirstLoad = true;
+
+	async function loadProducts() {
+		try {
+			const container = document.getElementById('catalog');
+			if (!container) return;
+
+			const response = await fetch(API_URL);
+			if (!response.ok) throw new Error('Network response was not ok');
+			
+			const products = await response.json();
+
+			if (isFirstLoad) {
+				renderInitial(container, products);
+				isFirstLoad = false;
+			} else {
+				updateExisting(products);
+			}
+
+		} catch (error) {
+			console.error('Error loading products:', error);
+		}
+	}
+
+	function renderInitial(container, products) {
+		if (products.length === 0) {
+			container.innerHTML = '<div class="col-span-full text-center py-10">Товары не найдены</div>';
+			return;
+		}
+
+		container.innerHTML = products.map(product => `
+			<div class="group relative bg-[#141414] rounded-sm border border-white/5 hover:border-[#D4AF37]/30 transition-all duration-500 overflow-hidden" id="product-${product.id}">
+				<div class="aspect-[4/5] w-full overflow-hidden bg-white/5 relative">
+					<img 
+						src="${product.image}" 
+						alt="${product.name}"
+						class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100"
+						onerror="this.src='https://via.placeholder.com/400x500/1a1a1a/D4AF37?text=NO+IMAGE'"
+					/>
+					<div class="absolute top-2 right-2 stock-badge-container">
+						${getStockBadgeHTML(product.stock)}
+					</div>
+				</div>
+				
+				<div class="p-6">
+					<p class="text-[#D4AF37] text-xs uppercase tracking-widest mb-1">${product.brand}</p>
+					<h3 class="text-xl font-light text-white mb-2 leading-tight">${product.name}</h3>
+					<p class="text-gray-400 text-sm mb-4 line-clamp-2 font-light">${product.description}</p>
+					
+					<div class="flex items-center justify-between mt-auto">
+						<span class="text-lg font-medium text-white">${formatPrice(product.price)}</span>
+						<button 
+							onclick="window.open('https://wa.me/79990000000?text=Здравствуйте, хочу купить ${encodeURIComponent(product.brand + ' ' + product.name)}', '_blank')"
+							class="px-4 py-2 bg-transparent border border-white/20 hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all duration-300 text-xs uppercase tracking-wider"
+						>
+							Купить
+						</button>
+					</div>
+				</div>
+			</div>
+		`).join('');
+	}
+
+	function updateExisting(products) {
+		products.forEach(product => {
+			const card = document.getElementById(`product-${product.id}`);
+			if (card) {
+				const badgeContainer = card.querySelector('.stock-badge-container');
+				if (badgeContainer) {
+					// Сравниваем HTML, чтобы лишний раз не трогать DOM
+					const newBadge = getStockBadgeHTML(product.stock);
+					if (badgeContainer.innerHTML !== newBadge) {
+						badgeContainer.innerHTML = newBadge;
+						
+						// Легкая анимация обновления
+						badgeContainer.classList.add('animate-pulse');
+						setTimeout(() => badgeContainer.classList.remove('animate-pulse'), 1000);
+					}
+				}
+			}
+		});
+	}
+
+	function formatPrice(price) {
+		return new Intl.NumberFormat('ru-RU', { 
+			style: 'currency', 
+			currency: 'RUB',
+			maximumFractionDigits: 0
+		}).format(price);
+	}
+
+	function getStockBadgeHTML(stock) {
+		if (stock <= 0) {
+			return '<span class="bg-red-900/80 text-white text-[10px] px-2 py-1 uppercase tracking-wider backdrop-blur-sm shadow-lg">Продано</span>';
+		} else if (stock <= 3) {
+			return `<span class="bg-[#D4AF37]/90 text-black text-[10px] px-2 py-1 uppercase tracking-wider backdrop-blur-sm shadow-lg">Осталось: ${stock}</span>`;
+		}
+		return '';
+	}
+
+	loadProducts();
+	setInterval(loadProducts, 2000); // 2 сек для более быстрой реакции
+</script>
